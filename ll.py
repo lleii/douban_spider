@@ -67,12 +67,13 @@ def main() :
         #pprint (f)
         #pprint (search_rst.json())
         pprint (search_rst)
-        if isset('search_rst["code"]') and search_rst["code"] == "1998" :
-            return
+        #if isset('search_rst["code"]') and search_rst["code"] == "1998" :
+         #   return
 
         if isset('search_rst["total"]') and search_rst["total"] > 0 :
             f["url"] = "http://api.douban.com/v2/movie/subject/" + search_rst["subjects"][0]["id"]
             j = requests.get(f["url"]).json()
+            pprint (j)
             
 
             n=0
