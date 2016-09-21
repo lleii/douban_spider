@@ -58,8 +58,6 @@ class PTN(object):
         # The main core instructuions
         self.parts[name] = clean
 
-        print name,match,raw,clean
-
         if len(match) != 0:
             # The instructions for extracting title
             index = self.torrent['name'].find(match[0])
@@ -67,7 +65,6 @@ class PTN(object):
                 self.start = len(match[0])
             elif self.end is None or index < self.end:
                 self.end = index
-            print "xxx",type(match[0]),index,self.start,self.end
         if name != 'excess':
             # The instructions for adding excess
             if name == 'group':
@@ -172,16 +169,3 @@ class PTN(object):
             self._part('excess', [], self.excess_raw, clean)
         return self.parts
 
-ptn = PTN()
-
-
-def parse(name):
-    return ptn.parse(name)
-
-#info = parse('San Andreas 2015 720p WEB-DL x264 AAC-JYK')
-#info = parse('大话西游I II合集.1994.BluRay.国粤双语.简体中字￡CMCT如烟.mkv')
-#info = parse('大话西游I II合集.1994.BluRay.国粤双语.简体中字￡CMCT如烟.mkv')
-info = parse('A Chinese Odyssey 1994 1080p Blu-ray x264 DTS-WiKi')
-#info = parse('2001太空漫游.2001.A.Space.Odyssey.1968.BluRay.1080p.DTS.x264-CHD')
-
-#print info # All details that were parsed
