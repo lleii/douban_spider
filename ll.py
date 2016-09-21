@@ -28,7 +28,7 @@ from pprint import pprint
 import ptn
 import os, sys
 import pandas as pd
-from bs4 import BeautifulSoup
+import BeautifulSoup
 
 def StringRegexReplace(pattern,repl,string):  
     return  re.sub(pattern, repl, string, count=1, flags=re.I)  
@@ -39,20 +39,82 @@ def check_contain_chinese(check_str):
              return True
      return False
 
+def isset(v): 
+    try: 
+        type (eval(v)) 
+    except: 
+        return 0 
+    else: 
+        return 1
+
 def main() :
     
 
     #for file in os.listdir("."):
      #   print file
-
+    a = os.listdir("/Volumes/data/pt")
+    r = []
+    for i in a:
+        f = ptn.PTN().parse(i)
+        #print(i)
+        #print(info["title"])
+        f["filename"] = i
+        #j["filename"] = i
+        
+        f["search_url"] = "http://api.douban.com/v2/movie/search?q=" + f["title"].replace(' ','%20')
     
-    #url2 = "https://movie.douban.com/subject_search?search_text=%E4%B8%A4%E5%B0%8F%E6%97%A0%E7%8C%9C&cat=1002"
-    #url2 = "http://api.douban.com/v2/movie/search?q=%E4%B8%A4%E5%B0%8F%E6%97%A0%E7%8C%9C"
+        search_rst = requests.get(f["search_url"]).json()
+        #pprint (f)
+        #pprint (search_rst.json())
+        pprint (search_rst)
+        if isset('search_rst["code"]') and search_rst["code"] == "1998" :
+            return
 
-    #info = ptn.parse('San Andreas 2015 720p WEB-DL x264 AAC-JYK')
-    #info = ptn.parse('大话西游I II合集.1994.BluRay.国粤双语.简体中字￡CMCT如烟.mkv')
-    #info = ptn.PTN().parse('A Chinese Odyssey 1994 1080p Blu-ray x264 DTS-WiKi')
-    info = ptn.PTN().parse('2001太空漫游.2001.A.Space.Odyssey.1968.BluRay.1080p.DTS.x264-CHD')
+        if isset('search_rst["total"]') and search_rst["total"] > 0 :
+            f["url"] = "http://api.douban.com/v2/movie/subject/" + search_rst["subjects"][0]["id"]
+            j = requests.get(f["url"]).json()
+            
+
+            n=0
+            if isset('j["casts"]'): 
+                f["db_casts"] = j["casts"]
+                n += 1
+            if isset('j["aka"]'): 
+                f["db_aka"] = j["aka"]
+                n += 1
+            if isset('j["countries"]'): 
+                f["db_countries"] = j["countries"]
+                n += 1
+            if isset('j["directors"]'):  
+                f["db_directors"] = j["directors"] 
+                n += 1
+            if isset('j["genres"]'): 
+                f["db_genres"] = j["genres"] 
+                n += 1
+            if isset('j["rating"]'): 
+                f["db_rating"] = j["rating"] 
+                n += 1
+            if isset('j["summary"]'): 
+                f["db_summary"] = j["summary"]
+                n += 1
+            if isset('j["rating"]'): 
+                f["db_rating"] = j["rating"]["average"]
+                n += 1
+
+            if n>0: 
+                f["is_fetch"] = true
+  
+
+        r.append(f)
+        time.sleep(1)
+    
+    df = pd.DataFrame(r) 
+    df.to_excel("out.xlsx")   
+    
+'''
+    info = ptn.PTN().parse('A Chinese Odyssey 1994 1080p Blu-ray x264 DTS-WiKi')
+    
+    #info = ptn.PTN().parse('2001太空漫游.2001.A.Space.Odyssey.1968.BluRay.1080p.DTS.x264-CHD')
     title= info["title"].replace(' ','%20')
     print (title) # All details that were parsed
 
@@ -71,10 +133,10 @@ def main() :
     url3 = "http://api.douban.com/v2/movie/subject/" +my_page.json()["subjects"][0]["id"]
     j = requests.get(url3).json()
     k={}
-    j["casts"][0] = j["casts"][0]["name"]
-    j["casts"][1] = j["casts"][1]["name"]
-    j["casts"][2] = j["casts"][2]["name"]
-    j["casts"][3] = j["casts"][3]["name"]
+    #j["casts"][0] = j["casts"][0]["name"]
+    #j["casts"][1] = j["casts"][1]["name"]
+    #j["casts"][2] = j["casts"][2]["name"]
+    #j["casts"][3] = j["casts"][3]["name"]
     #k["castsssss"] = j["casts"][3]["name"]
 
 #    j.update({'cast0':j["casts"][0]})
@@ -88,19 +150,19 @@ def main() :
     j["directors"] = j["directors"][0]["name"]
     j["images"] = j["images"]["small"]
     r.append(j)
-    pprint (type(j))
+    #pprint (type(j))
     f = pd.DataFrame(r)    
 
-    '''
-    j["casts"] = ""
-    j["aka"] = ""
-    j["countries"] = ""
-    j["directors"] = ""
-    j["genres"] = ""
-    j["rating"] = ""
-    j["summary"] = ""
+    
+    #j["casts"] = ""
+    #j["aka"] = ""
+    #j["countries"] = ""
+    #j["directors"] = ""
+    #j["genres"] = ""
+    #j["rating"] = ""
+    #j["summary"] = ""
     #j[""] = ""
-    '''
+    
     #data3 = json.load(my_page3)
     
     
@@ -122,8 +184,9 @@ def main() :
     #r += j["casts"]
     #f = pd.DataFrame.from_dict(j, orient='index').T.set_index('index')   
     #f = pd.DataFrame(j.items())    
-    f.to_csv("a.csv",encoding="gb18030")
-    print (f)
+    #f.to_excel("b.xlsx",encoding="gb18030")
+    f.to_excel("b.xlsx")
+    #print (f)
     #pprint (r)
 
     #print (type(json.dumps(j)))
@@ -156,7 +219,7 @@ def main() :
 
     #print list(enumerate(movie_items))[0]
     #print list(movie_items)[0]
-
+'''
 if __name__ == '__main__':
     main()
 
