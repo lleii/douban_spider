@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 '''
 功能列表：
@@ -164,27 +164,31 @@ def main() :
 
 
     global search_rst,j
-    o = pd.read_excel("o2.xlsx")   
+    o = pd.read_excel("o4.xlsx")   
 #    pprint(o)
     for index, row in o.iterrows():   # 获取每行的index、row
         #for col_name in o.columns:
-        pprint(index)#保留
-        pprint(row["filename"])#保留
         if index == 0 :
             continue
 
-        #if index > 3 :
-        #    continue    
+        #if index > 1 :
+         #   continue  
+
 
         if cfg['mode'] != 'all' and row["is_fetch"] > 0 :
-            pprint ("continue")
+            #pprint ("continue")
             r.append(row.to_dict())
             continue
 
-        if isinstance(row["id"],str):
+        print(index)#保留
+        print(row["filename"])#保留
+
+        #pprint (type(row["id"]))
+        #if isinstance(row["id"],str):
+        if row["id"] is not None:
             #id = row["id"]
             f = row.to_dict()
-            #pprint ("row.to_dict()")
+            #pprint (f)
             #continue
         else :
             #pprint ("else")
@@ -222,11 +226,14 @@ def main() :
 
         #if 'total' in search_rst and search_rst["total"] > 0 :
             #f["id"] = search_rst["subjects"][0]["id"]
-        if 'id' in f and isinstance(f["id"],str):
+        #if 'id' in f and isinstance(f["id"],str):
+        if 'id' in f and f["id"] is not None:            
 #            pprint ("fetch")
             #pprint (f["id"])
-            f["url"] = "http://api.douban.com/v2/movie/subject/" + f["id"]
+            f["url"] = "http://api.douban.com/v2/movie/subject/" + str(f["id"])
             j = requests.get(f["url"]).json()
+
+            #pprint(j)
 
             n=0
 
@@ -371,7 +378,7 @@ def main() :
     df = pd.DataFrame(r) 
     col=['is_fetch','id','filename','title','db_title','db_rating','db_ratings_count','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title',  'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
     df=df[col]
-    df.to_excel("o3.xlsx")   
+    df.to_excel("o4.xlsx")   
 
     #df = pd.DataFrame(r) 
     #df.to_excel("o.xlsx")   
