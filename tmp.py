@@ -74,8 +74,10 @@ def isset(v):
 
 def init(cfg,r,f) :
     cfg['mode'] = ''
+    cfg['dir'] = ["/Volumes/data/pt","/Volumes/data/old","/Volumes/data/tv"]
 
     f["id"] = "原始ID"
+    f["status"] = "状态"
     f["audio"] = "音频编码"
     f["codec"] = "视频编码"
     f["container"] = "容器"
@@ -144,6 +146,14 @@ def init(cfg,r,f) :
 
     r.append(f)
 
+def is_done(f,aa) :
+    if f["filename"] not in aa:
+        f['status'] = "done"
+        print(f["filename"])
+        return 1
+
+    return 0
+        
 
 def main() :
     
@@ -154,17 +164,56 @@ def main() :
 
     r = [] #index list
     f = {} #row dict
+    g = {}
+    a = []
+    aa = []
+    rb = []
     cfg={} #config
     init(cfg,r,f)
     #pprint (cfg)
     #pprint (r)
     #pprint (f)
-    #a = os.listdir("/Volumes/data/pt")
+    
     
 
 
     global search_rst,j
-    o = pd.read_excel("o4.xlsx")   
+    o = pd.read_excel("o4.xlsx")
+
+    b = o["filename"].tolist()
+
+    for src_dir in cfg['dir']:
+        a += os.listdir(src_dir)
+    #a = os.listdir("/Volumes/data/pt")
+    #a += os.listdir("/Volumes/data/old")
+    #a += os.listdir("/Volumes/data/tv")
+    #pprint(a)
+    #pprint(len(a))
+    #return
+    for ai in a:
+
+        if re.search("^\.", ai) or re.match("inc", ai):
+            #pprint(ai)  
+            continue
+        if ai not in b:
+            pprint(ai) 
+            g = {}            
+            g['filename'] = ai
+            g['status'] = "new"
+            pprint(g['filename']) 
+            rb.append(g)
+            pprint(rb)
+            #pprint(ai)  
+        aa.append(ai)
+    print(len(o),len(rb)) 
+    dfb = pd.DataFrame(rb,index= range(len(o),len(o)+len(rb))) 
+    o=o.append(dfb)
+    #pprint(o['filename'])
+    #pprint(rb)
+    #pprint(dfb)
+
+
+    #return   
 #    pprint(o)
     for index, row in o.iterrows():   # 获取每行的index、row
         #for col_name in o.columns:
@@ -175,23 +224,32 @@ def main() :
          #   continue  
 
 
+
+        #if index != 107 :
+        #    continue
+
+
         if cfg['mode'] != 'all' and row["is_fetch"] > 0 :
             #pprint ("continue")
-            r.append(row.to_dict())
+            f = row.to_dict()
+            is_done (f,aa)
+            r.append(f)
             continue
+
+        
 
         print(index)#保留
         print(row["filename"])#保留
 
         #pprint (type(row["id"]))
         #if isinstance(row["id"],str):
-        if row["id"] is not None:
+        if row["id"] is not None and row['status'] != "new":
             #id = row["id"]
             f = row.to_dict()
-            #pprint (f)
+            pprint (row['status'])
             #continue
         else :
-            #pprint ("else")
+            pprint ("else")
             #pprint (row["id"])
 #            pprint (index)
             i=row["filename"]
@@ -200,6 +258,8 @@ def main() :
             #print(i)
             #print(info["title"])
             f["filename"] = i
+            if row['status'] == "new":
+                f["status"] = "new"
             #j["filename"] = i
             
             f["search_url"] = "http://api.douban.com/v2/movie/search?q=" + f["title"].replace(' ','%20')
@@ -228,8 +288,8 @@ def main() :
             #f["id"] = search_rst["subjects"][0]["id"]
         #if 'id' in f and isinstance(f["id"],str):
         if 'id' in f and f["id"] is not None:            
-#            pprint ("fetch")
-            #pprint (f["id"])
+            pprint ("fetch")
+            pprint (f["filename"])
             f["url"] = "http://api.douban.com/v2/movie/subject/" + str(f["id"])
             j = requests.get(f["url"]).json()
 
@@ -368,17 +428,17 @@ def main() :
 
             if n>0: 
                 f["is_fetch"] = 1
-  
 
+        is_done(f,aa)
         r.append(f)
         #pprint (f)
         #pprint (r)
         time.sleep(1)
 
     df = pd.DataFrame(r) 
-    col=['is_fetch','id','filename','title','db_title','db_rating','db_ratings_count','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title',  'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
+    col=['is_fetch','id','status','filename','title','db_title','db_rating','db_ratings_count','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title',  'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
     df=df[col]
-    df.to_excel("o4.xlsx")   
+    df.to_excel("o5.xlsx")   
 
     #df = pd.DataFrame(r) 
     #df.to_excel("o.xlsx")   
