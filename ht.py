@@ -12,13 +12,6 @@ TODOLIST v2：
 2.xls通过文件名点击播放；
 3.imdb信息获取，ID来源：1英文名获取；2.豆瓣获取
 
-
-BUG:
-1.需要登录查询，否则404，如https://movie.douban.com/subject/5912992/
-
-
-chrome cookie：~/Library/Application Support/Google/Chrome/Default/Cookies 
-
 def StringRegexReplace(pattern,repl,string):  
     return  re.sub(pattern, repl, string, count=1, flags=re.I)  
 
@@ -37,6 +30,8 @@ def isset(v):
     else: 
         pprint (2)
         return 1
+
+        
 '''
 
 import string
@@ -47,8 +42,7 @@ from pprint import pprint
 import ptn
 import os, sys
 import pandas as pd
-from mi import MediaInfo
-import os.path
+from bs4 import BeautifulSoup  
 
 def init(cfg) :
     cfg['mode'] = ''
@@ -63,119 +57,74 @@ def is_done(f,aa) :
 
     return 0
         
+from MediaInfo import MediaInfo
+import os
+import sys
+import os.path
+
+'''
+    b=set()
+
+    for dirpath, dirnames, filenames in os.walk('/Volumes/data/tv/'):
+            for filename in filenames:
+                filepath = os.path.join(dirpath, filename)
+                #if os.path.getsize(filepath) > 1024*1024*100:
+                if os.path.splitext(filename)[1] in  ['.mkv','.mp4','.avi','.iso','.rmvb'] :
+                    print("file:" + filepath)
+                    print(os.path.getsize(filepath))
+                    a = os.path.splitext(filename)[1].lower()
+                    b.add(a)
+
+                continue
+            print (b)
+            
+            {'.mp4', '.iso', '.mkv'}
+            {'.mkv', '.rmvb', '.mp4'}
+            {'.ISO', '.iso', '.mkv', '.mp4'}
+            {'.mkv', '.iso', '.mp4'}
+
+                if os.path.splitext(filename)[1] in  ['.mkv','.mp4','.avi','.iso','.rmvb'] :
+                   filepath = os.path.join(dirpath, filename)
+                   print("file:" + filepath)
+                   print(dirpath)
+                   print(dirnames)
+                   print(filenames)
+                   print(os.path.getsize(filepath))
+                   
+                   #input_file = open(filepath)
+                   #text = input_file.read()
+                   #input_file.close()
+                   
+                   #output_file = open( filepath, 'w')
+                   #output_file.write(text)
+                   #output_file.close()
+'''
 
 def main() :
-    r = list() #index list
-    f = dict() #row dict
-    g = dict()
-    a = list()
-    aa = list()
-    rb = list()
-    cfg = dict() #config
+
+   
+    info     = MediaInfo (filename = '',cmd ='/usr/local/bin/mediainfo')
+    infoData = info.getInfo()
+
+    pprint (infoData)
+
+    return
+    r = [] #index list
+    f = {} #row dict
+    g = {}
+    a = []
+    aa = []
+    rb = []
+    cfg={} #config
     global search_rst,j
 
     init(cfg)
     
-    o = pd.read_excel("o2.xlsx")
+    o = pd.read_excel("o.xlsx")
     b = o["filename"].tolist()
 
     for src_dir in cfg['dir']:
         a += os.listdir(src_dir)
-    cfg['dir'] = ["","/Volumes/data/old","/Volumes/data/tv"]
-    pt = os.listdir('/Volumes/data/pt')
-    tv = os.listdir('/Volumes/data/tv')
-    old = os.listdir('/Volumes/data/old')
-    for index, row in o.iterrows():  
-        f = row.to_dict()
-        '''
-        if f['filename'] in pt:
-            f['dirpath'] = '/Volumes/data/pt'
-            f['filepath'] = os.path.join(f['dirpath'], f['filename'])
-            print(f['filepath'])
-        if f['filename'] in tv:
-            f['dirpath'] = '/Volumes/data/tv'
-            f['filepath'] = os.path.join(f['dirpath'], f['filename'])
-            print(f['filepath'])
-        if f['filename'] in old:
-            f['dirpath'] = '/Volumes/data/old'
-            f['filepath'] = os.path.join(f['dirpath'], f['filename'])
-            print(f['filepath'])
-            f['mi_extname']=''
-            f['mi_bitrate']=''
-            f['mi_container']=''
-            f['mi_duration']=''
-            f['mi_fileSize']=''
-        '''
-        pprint (f['filepath'])
-        if f['filepath'] != f['filepath'] or f['filepath'] is None:
-            r.append(f)
-            continue 
-        if 'mi_duration' in f:
-            if f['mi_duration'] == f['mi_duration'] and f['mi_duration'] != 0:
-                r.append(f)
-                continue
-
-
-        if os.path.isdir(f['filepath']):
-            f['mi_duration'] = 0
-            f['mi_fileSize'] = 0
-            for dirpath, dirnames, filenames in os.walk(f['filepath']):
-                for filename in filenames:                    
-                    if f['mi_extname'] in  ['.mkv','.mp4','.avi','.iso','.rmvb'] :
-                        f['mi_extname'] = os.path.splitext(filename)[1].lower()
-                        filepath = os.path.join(dirpath, filename)
-                        #if os.path.getsize(filepath) > 1024*1024*100:
-                        if 1:
-                            print("file:" + filepath)
-                            #a = os.path.splitext(filename)[1].lower()
-                            info = MediaInfo (filename = filepath,cmd ='/usr/local/bin/mediainfo')
-                            infoData = info.getInfo()
-
-                            if infoData:
-                            
-                                if 'bitrate' in infoData:  
-                                    f['mi_bitrate'] = int(infoData['bitrate'])//1000#Kbps
-                                if 'container' in infoData:
-                                    f['mi_container'] = infoData['container']
-                                if 'duration' in infoData:
-                                    f['mi_duration'] += int(infoData['duration'])//1000//60 #min
-                                if 'fileSize' in infoData:
-                                    f['mi_fileSize'] += int(infoData['fileSize'])//1024//1024 #MB
-                                
-
-                    
-                #print (b)
-        else:
-            info = MediaInfo (filename = f['filepath'],cmd ='/usr/local/bin/mediainfo')
-            infoData = info.getInfo()
-            f['mi_extname'] = os.path.splitext(f['filename'])[1].lower()
-            if infoData:
-                if 'bitrate' in infoData:  
-                    f['mi_bitrate'] = int(infoData['bitrate'])//1000
-                if 'container' in infoData:
-                    f['mi_container'] = infoData['container']
-                if 'duration' in infoData:
-                    f['mi_duration'] = int(infoData['duration'])//1000//60
-                if 'fileSize' in infoData:
-                    f['mi_fileSize'] = int(infoData['fileSize'])//1024//1024
-
-        pprint (f['mi_duration'])
-        r.append(f)
-
-
-
-
-        df = pd.DataFrame(r) 
-        #列排序    
-        col=['is_fetch','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
-        df = df[col]
-        #行排序，by豆瓣评分
-        df = df.sort_values(['db_rating'],ascending=0)
-        df.to_excel("o6.xlsx")  
-
-
-
-    return
 
     #新增文件，新下载
     for ai in a:
