@@ -7,8 +7,7 @@
 2.文件解析：MediaCoder集成
 3.在线信息抓取：IMDB、DOUBAN
 
-
-0.xls模板增加列mi_get
+t
 1.函数、变量名整理
 2.多余to_xls清理
 
@@ -44,23 +43,6 @@ def isset(v):
         pprint (2)
         return 1
 
-        if f['filename'] in pt:
-            f['dirpath'] = '/Volumes/data/pt'
-            f['filepath'] = os.path.join(f['dirpath'], f['filename'])
-            print(f['filepath'])
-        if f['filename'] in tv:
-            f['dirpath'] = '/Volumes/data/tv'
-            f['filepath'] = os.path.join(f['dirpath'], f['filename'])
-            print(f['filepath'])
-        if f['filename'] in old:
-            f['dirpath'] = '/Volumes/data/old'
-            f['filepath'] = os.path.join(f['dirpath'], f['filename'])
-            print(f['filepath'])
-            f['mi_extname']=''
-            f['mi_bitrate']=''
-            f['mi_container']=''
-            f['mi_duration']=''
-            f['mi_fileSize']=''
 '''
 
 import string
