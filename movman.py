@@ -165,7 +165,7 @@ def douban_fetch(o,cfg,aa) :
 
     for index in o.index:
         #f = o.iloc[index]
-        #f = o.ix[index,]
+        #f = o.ix[index,] 
 
         if o.ix[index,"filename"] not in aa:
             o.set_value(index, "status", "done")
@@ -192,7 +192,7 @@ def douban_fetch(o,cfg,aa) :
         #else : #搜索获取ID
             o.set_value(index, "search_url", "http://api.douban.com/v2/movie/search?q=" + o.ix[index, "title"].replace(' ','%20'))
             search_rst = requests.get(o.ix[index, "search_url"]).json()
-            time.sleep(1)#豆瓣:150次IO/min
+            time.sleep(1)#豆瓣:150次/min
 
             if 'total' in search_rst and search_rst["total"] > 0 :
                 o.set_value(index, "id", search_rst["subjects"][0]["id"])
@@ -207,7 +207,7 @@ def douban_fetch(o,cfg,aa) :
             o.set_value(index, "url", "http://api.douban.com/v2/movie/subject/" + str(int(o.ix[index, "id"])))
             #print ("url:",o.set_value(index, "url"])
             j = requests.get(o.ix[index, "url"]).json()
-            time.sleep(1)#豆瓣:150次IO/min
+            time.sleep(1)#豆瓣:150次/min
             #pprint(j)
             #n=0
 
