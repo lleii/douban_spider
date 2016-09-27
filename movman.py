@@ -72,8 +72,8 @@ def init(cfg) :
     cfg['mode'] = ''
     cfg['dir'] = ["/Volumes/data/pt","/Volumes/data/old","/Volumes/data/tv"]
     #cfg['dir'] = ["/data/src/py/movie-man"]
-    cfg['if'] = "o6.xlsx"
-    cfg['of'] = "o6.xlsx"
+    cfg['if'] = "o7.xlsx"
+    cfg['of'] = "o7.xlsx"
 
 def douban_fetch(o,cfg,aa) :
 
@@ -256,7 +256,11 @@ def douban_fetch(o,cfg,aa) :
                 o.set_value(index, "db_fetch", 1)
 
         col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
-        o[col].sort_values(['db_rating'],ascending=0).to_excel(cfg['of'])  
+        #o[col].sort_values(['db_rating'],ascending=0).to_excel(cfg['of'], sheet_name='doing')
+        with pd.ExcelWriter(cfg['of']) as writer:
+            o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
+            o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
+  
                 #if n>0: #已抓取
             #    o.set_value(index, "db_fetch", 1)
 
@@ -298,7 +302,10 @@ def dir_scan(o,cfg,aa) :
                 if os.path.isdir(f['filepath']) or os.path.splitext(ai)[1].lower() in  ['.mkv','.mp4','.avi','.iso','.rmvb'] :
                     o = o.append(f, ignore_index=True) 
     col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
-    o[col].sort_values(['db_rating'],ascending=0).to_excel(cfg['of'])  
+    #o[col].sort_values(['db_rating'],ascending=0).to_excel(cfg['of'], sheet_name='doing')  
+    with pd.ExcelWriter(cfg['of']) as writer:
+        o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
+        o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
 
                 #rb.append(g)
                 
@@ -376,7 +383,10 @@ def mediainfo_get(o,cfg,aa) :
                     o.set_value(index, "mi_fileSize", int(infoData['fileSize'])//1024//1024)
                     o.set_value(index, "mi_get", 1)
         col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
-        o[col].sort_values(['db_rating'],ascending=0).to_excel(cfg['of'])  
+        #o[col].sort_values(['db_rating'],ascending=0).to_excel(cfg['of'], sheet_name='doing')  
+        with pd.ExcelWriter(cfg['of']) as writer:
+            o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
+            o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
 
 
 def main() :
@@ -387,7 +397,8 @@ def main() :
 
     init(cfg)
 
-    o = pd.read_excel(cfg['if'])
+    #o = pd.read_excel(cfg['if'],'doing')
+    o = pd.read_excel(cfg['if'],'doing').append(pd.read_excel(cfg['if'],'done'), ignore_index=True)
 
     dir_scan(o,cfg,aa)
 
@@ -397,7 +408,12 @@ def main() :
 
     #列排序by col；行排序by db_rating
     col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
-    o[col].sort_values(['db_rating'],ascending=0).to_excel(cfg['of'])  
+    with pd.ExcelWriter(cfg['of']) as writer:
+        o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
+        o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
+        #o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(cfg['of'], sheet_name='doing') 
+        #o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(cfg['of'], sheet_name='done') 
+    #print(o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0))
 
     return     
 
