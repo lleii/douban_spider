@@ -7,14 +7,9 @@
 2.文件解析：MediaCoder集成
 3.在线信息抓取：IMDB、DOUBAN
 
-t
-1.函数、变量名整理
-2.多余to_xls清理
-
 TODOLIST v2：
-1.文件解析：MediaCoder集成
-2.xls通过文件名点击播放；
-3.imdb信息获取，ID来源：1英文名获取；2.豆瓣获取
+1.xls通过文件名点击播放；
+2.imdb信息获取，ID来源：1英文名获取；2.豆瓣获取
 
 
 
@@ -23,36 +18,6 @@ BUG:
 
 
 chrome cookie：~/Library/Application Support/Google/Chrome/Default/Cookies 
-
-def StringRegexReplace(pattern,repl,string):  
-    return  re.sub(pattern, repl, string, count=1, flags=re.I)  
-
-def check_contain_chinese(check_str):
-     for ch in check_str.decode('utf-8'):
-         if u'\u4e00' <= ch <= u'\u9fff':
-             return True
-     return False
-
-def isset(v): 
-    try: 
-        type (eval(v)) 
-    except: 
-        pprint (1)
-        return 0 
-    else: 
-        pprint (2)
-        return 1
-
-
-Does work:
-
-df = df[df.line_race != 0]
-Doesn't do anything:
-
-df = df[df.line_race != None]
-Does work:
-
-df = df[df.line_race.notnull()]
 
 '''
 
@@ -71,7 +36,6 @@ import os.path
 def init(cfg) :
     cfg['mode'] = ''
     cfg['dir'] = ["/Volumes/data/pt","/Volumes/data/old","/Volumes/data/tv"]
-    #cfg['dir'] = ["/data/src/py/movie-man"]
     cfg['if'] = "o7.xlsx"
     cfg['of'] = "o7.xlsx"
 
@@ -79,30 +43,11 @@ def douban_fetch(o,cfg,aa) :
 
     for index in o.index:
         print("douban_fetch:",int(index)*100//len(o),"%, file:",o.ix[index, "filename"])
-        #f = o.iloc[index]
-        #f = o.ix[index,] 
-
-            #print(o.ix[index,"filename"],"is done")
-
-
-        #if index != 150 :
-        #    continue
-
-        #已抓取，跳过
-        #
 
         if cfg['mode'] != 'all' and o.ix[index,"db_fetch"] == 1 :
             continue
-
-        #print("Fetching:",index)#保留
-        #print(o.set_value(index, "filename"])#保留
-
-        #手工矫正ID
-        #if row["id"] is not None and row['status'] != "new":
-        #    f = row.to_dict()
          
         if pd.isnull(o.ix[index, "id"]):
-        #else : #搜索获取ID
             o.set_value(index, "search_url", "http://api.douban.com/v2/movie/search?q=" + o.ix[index, "title"].replace(' ','%20'))
             search_rst = requests.get(o.ix[index, "search_url"]).json()
             time.sleep(0.1)#豆瓣:150次/h
@@ -112,17 +57,9 @@ def douban_fetch(o,cfg,aa) :
 
         #抓取信息
         if not pd.isnull(o.ix[index, "id"]):            
-            #pprint ("fetch")
-            #pprint (o.ix[index, "filename"])
-            #sid = o.set_value(index, "id"]
-            #if o.set_value(index, "id",= o.set_value(index, "id"] :#not NaN)
-            #    sid = int(o.set_value(index, "id"])
             o.set_value(index, "url", "http://api.douban.com/v2/movie/subject/" + str(int(o.ix[index, "id"])))
-            #print ("url:",o.set_value(index, "url"])
             j = requests.get(o.ix[index, "url"]).json()
             time.sleep(0.1)#豆瓣:150次/h
-            #pprint(j)
-            #n=0
 
             if 'rating' in j: 
                 o.set_value(index, "db_rating", j["rating"]["average"])
@@ -137,21 +74,14 @@ def douban_fetch(o,cfg,aa) :
             if 'directors' in j: 
                 o.set_value(index, "db_fetch", 1)
                 xx = ""
-                #o.set_value(index, "db_directors", "")
                 for x in j["directors"] :
                     xx += x["name"] + ";"
-                #o.set_value(index, "db_directors"] 
                 o.set_value(index, "db_directors", xx)
 
-            #print(type(j["aka"]))
-            #print(o.set_value(index, "db_aka"])
             
             if 'aka' in j:  
-                #o.set_value(index,        "db_aka"   ,   j["aka"])
                 o.set_value(index,         'db_aka'   ,   j["aka"])
-                #o.set_value(index, "db_aka", list())
                 o.set_value(index, "db_fetch", 1)
-            #print(o.set_value(index, "db_aka"])
 
             if 'casts' in j: 
                 o.set_value(index, "db_fetch", 1)
@@ -256,41 +186,22 @@ def douban_fetch(o,cfg,aa) :
                 o.set_value(index, "db_fetch", 1)
 
         col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
-        #o[col].sort_values(['db_rating'],ascending=0).to_excel(cfg['of'], sheet_name='doing')
         with pd.ExcelWriter(cfg['of']) as writer:
             o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
             o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
-  
-                #if n>0: #已抓取
-            #    o.set_value(index, "db_fetch", 1)
-
-        
-        #print (f)
-        #pprint (o.iloc[index])
 
 def dir_scan(o,cfg,aa) :
     b = o["filename"].tolist()
     f = dict()
-    #   pprint (len(o))
 
     for src_dir in cfg['dir']:
-    #if 1:
-        #a += os.listdir(src_dir)
-
-        #新增文件，新下载
         for ai in os.listdir(src_dir):
-        #src_dir="__src"
-        #for ai in lll:
-
             if re.search("^\.", ai) or re.match("inc", ai):
-                #pprint(ai)  
                 continue
 
             aa.append(ai)
 
             if ai not in b:
-                #pprint(ai) 
-
                 f['status'] = "new"
 
                 f['filename'] = ai
@@ -302,25 +213,11 @@ def dir_scan(o,cfg,aa) :
                 if os.path.isdir(f['filepath']) or os.path.splitext(ai)[1].lower() in  ['.mkv','.mp4','.avi','.iso','.rmvb'] :
                     o = o.append(f, ignore_index=True) 
     col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
-    #o[col].sort_values(['db_rating'],ascending=0).to_excel(cfg['of'], sheet_name='doing')  
     with pd.ExcelWriter(cfg['of']) as writer:
         o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
         o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
 
-                #rb.append(g)
-                
-            
-        
-#        pprint (o.tail())
-#        pprint (len(o))
-        #o=o.append(dfb)
-
-#    for index, f in o.iterrows():  
-    #print(len(o))
-    #print(o.index)
-
 def mediainfo_get(o,cfg,aa) :
-    #for index, row in o.iterrows():  
     for index in o.index:
         print("mediainfo_get:",int(index)*100//len(o),"%, file:",o.ix[index, "filename"])
 
@@ -334,8 +231,6 @@ def mediainfo_get(o,cfg,aa) :
         if pd.isnull(o.ix[index,"filepath"]):
             continue 
 
-        #print(o.ix[index,"filepath"])
-
         if os.path.isdir(o.ix[index,"filepath"]):
             o.set_value(index, "mi_duration", 0)
             o.set_value(index, "mi_fileSize", 0)
@@ -345,26 +240,23 @@ def mediainfo_get(o,cfg,aa) :
                     if mi_extname in  ['.mkv','.mp4','.avi','.iso','.rmvb'] :
                         o.set_value(index, "mi_extname", mi_extname)
                         filepath = os.path.join(dirpath, filename)
-                        #if os.path.getsize(filepath) > 1024*1024*100:
-                        if 1:
-                            #print("file:" + filepath)
-                            #a = os.path.splitext(filename)[1].lower()
-                            info = MediaInfo (filename = filepath,cmd ='/usr/local/bin/mediainfo')
-                            infoData = info.getInfo()
 
-                            if infoData:                            
-                                if 'bitrate' in infoData:  
-                                    o.set_value(index, "mi_bitrate", int(infoData['bitrate'])//1000)#Kbps
-                                    o.set_value(index, "mi_get", 1)
-                                if 'container' in infoData:
-                                    o.set_value(index, "mi_container", infoData['container'])
-                                    o.set_value(index, "mi_get", 1)
-                                if 'duration' in infoData:
-                                    o.set_value(index, "mi_duration", o.ix[index,"mi_duration"] + int(infoData['duration'])//1000//60 )#min
-                                    o.set_value(index, "mi_get", 1)
-                                if 'fileSize' in infoData:
-                                    o.set_value(index, "mi_fileSize", o.ix[index,"mi_fileSize"] + int(infoData['fileSize'])//1024//1024)#MB
-                                    o.set_value(index, "mi_get", 1)
+                        info = MediaInfo (filename = filepath,cmd ='/usr/local/bin/mediainfo')
+                        infoData = info.getInfo()
+
+                        if infoData:                            
+                            if 'bitrate' in infoData:  
+                                o.set_value(index, "mi_bitrate", int(infoData['bitrate'])//1000)#Kbps
+                                o.set_value(index, "mi_get", 1)
+                            if 'container' in infoData:
+                                o.set_value(index, "mi_container", infoData['container'])
+                                o.set_value(index, "mi_get", 1)
+                            if 'duration' in infoData:
+                                o.set_value(index, "mi_duration", o.ix[index,"mi_duration"] + int(infoData['duration'])//1000//60 )#min
+                                o.set_value(index, "mi_get", 1)
+                            if 'fileSize' in infoData:
+                                o.set_value(index, "mi_fileSize", o.ix[index,"mi_fileSize"] + int(infoData['fileSize'])//1024//1024)#MB
+                                o.set_value(index, "mi_get", 1)
         else:
             o.set_value(index, "mi_extname", os.path.splitext(o.ix[index,"filename"])[1].lower())
             info = MediaInfo (filename = o.ix[index,"filepath"], cmd ='/usr/local/bin/mediainfo')
@@ -383,7 +275,6 @@ def mediainfo_get(o,cfg,aa) :
                     o.set_value(index, "mi_fileSize", int(infoData['fileSize'])//1024//1024)
                     o.set_value(index, "mi_get", 1)
         col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
-        #o[col].sort_values(['db_rating'],ascending=0).to_excel(cfg['of'], sheet_name='doing')  
         with pd.ExcelWriter(cfg['of']) as writer:
             o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
             o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
@@ -393,11 +284,9 @@ def main() :
 
     aa = list()
     cfg = dict() #config
-    #global search_rst,j
 
     init(cfg)
 
-    #o = pd.read_excel(cfg['if'],'doing')
     o = pd.read_excel(cfg['if'],'doing').append(pd.read_excel(cfg['if'],'done'), ignore_index=True)
 
     dir_scan(o,cfg,aa)
@@ -407,24 +296,12 @@ def main() :
     mediainfo_get(o,cfg,aa)
 
     #列排序by col；行排序by db_rating
-    col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
+    col=['db_fetch','mi_get','id','status','db_title','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
     with pd.ExcelWriter(cfg['of']) as writer:
         o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
         o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
-        #o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(cfg['of'], sheet_name='doing') 
-        #o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(cfg['of'], sheet_name='done') 
-    #print(o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0))
 
     return     
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
-
-
