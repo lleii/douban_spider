@@ -43,6 +43,17 @@ def isset(v):
         pprint (2)
         return 1
 
+
+Does work:
+
+df = df[df.line_race != 0]
+Doesn't do anything:
+
+df = df[df.line_race != None]
+Does work:
+
+df = df[df.line_race.notnull()]
+
 '''
 
 import string
@@ -94,7 +105,7 @@ def douban_fetch(o,cfg,aa) :
         #else : #搜索获取ID
             o.set_value(index, "search_url", "http://api.douban.com/v2/movie/search?q=" + o.ix[index, "title"].replace(' ','%20'))
             search_rst = requests.get(o.ix[index, "search_url"]).json()
-            time.sleep(1)#豆瓣:150次/min
+            time.sleep(0.1)#豆瓣:150次/h
 
             if 'total' in search_rst and search_rst["total"] > 0 :
                 o.set_value(index, "id", search_rst["subjects"][0]["id"])
@@ -109,7 +120,7 @@ def douban_fetch(o,cfg,aa) :
             o.set_value(index, "url", "http://api.douban.com/v2/movie/subject/" + str(int(o.ix[index, "id"])))
             #print ("url:",o.set_value(index, "url"])
             j = requests.get(o.ix[index, "url"]).json()
-            time.sleep(1)#豆瓣:150次/min
+            time.sleep(0.1)#豆瓣:150次/h
             #pprint(j)
             #n=0
 
@@ -377,7 +388,7 @@ def main() :
     init(cfg)
 
     o = pd.read_excel(cfg['if'])
-    
+
     dir_scan(o,cfg,aa)
 
     douban_fetch(o,cfg,aa)
