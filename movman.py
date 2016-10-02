@@ -7,6 +7,11 @@
 2.文件解析：MediaCoder集成
 3.在线信息抓取：IMDB、DOUBAN
 
+
+1.cfg['if']不存在
+2.分国家，类型，年份等筛选
+3.重复id查找
+
 TODOLIST v2：
 1.xls通过文件名点击播放；
 2.imdb信息获取，ID来源：1英文名获取；2.豆瓣获取
@@ -36,8 +41,8 @@ import os.path
 def init(cfg) :
     cfg['mode'] = ''
     cfg['dir'] = ["/Volumes/data/pt","/Volumes/data/old","/Volumes/data/tv"]
-    cfg['if'] = "o7.xlsx"
-    cfg['of'] = "o7.xlsx"
+    cfg['if'] = "/Volumes/data/pt/mm.xlsx"
+    cfg['of'] = "/Volumes/data/pt/mm.xlsx"
 
 def douban_fetch(o,cfg,aa) :
 
