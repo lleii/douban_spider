@@ -7,8 +7,8 @@
 2.文件解析：MediaCoder集成
 3.在线信息抓取：IMDB、DOUBAN
 
-
-1.cfg['if']不存在
+0.监控文件变化
+1.cfg['if']不存在,doing,done为空
 2.分国家，类型，年份等筛选
 3.重复id查找
 
@@ -38,16 +38,21 @@ import pandas as pd
 from mi import MediaInfo
 import os.path
 
+import logging
+
 def init(cfg) :
     cfg['mode'] = ''
     cfg['dir'] = ["/Volumes/data/pt","/Volumes/data/old","/Volumes/data/tv"]
-    cfg['if'] = "/Volumes/data/pt/mm.xlsx"
-    cfg['of'] = "/Volumes/data/pt/mm.xlsx"
+    cfg['if'] = "/Volumes/data/pt/mm2.xlsx"
+    cfg['of'] = "/Volumes/data/pt/mm2.xlsx"
 
+
+    
 def douban_fetch(o,cfg,aa) :
 
     for index in o.index:
-        print("douban_fetch:",int(index)*100//len(o),"%, file:",o.ix[index, "filename"])
+        logging.info("douban_fetch:"+str(index*100//len(o))+"%, file:"+o.ix[index, "filename"])
+        #logging.info("douban_fetch:",int(index)*100//len(o),"%, file:",o.ix[index, "filename"])
 
         if cfg['mode'] != 'all' and o.ix[index,"db_fetch"] == 1 :
             continue
@@ -217,18 +222,25 @@ def dir_scan(o,cfg,aa) :
 
                 if os.path.isdir(f['filepath']) or os.path.splitext(ai)[1].lower() in  ['.mkv','.mp4','.avi','.iso','.rmvb'] :
                     o = o.append(f, ignore_index=True) 
+                    logging.info("dir_scan new item:"+f['filepath'])
+
+
     col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
     with pd.ExcelWriter(cfg['of']) as writer:
         o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
         o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
+    return o
 
 def mediainfo_get(o,cfg,aa) :
     for index in o.index:
-        print("mediainfo_get:",int(index)*100//len(o),"%, file:",o.ix[index, "filename"])
+        logging.info("mediainfo_get:"+str(index*100//len(o))+"%, file:"+o.ix[index, "filename"])
 
         if o.ix[index,"filename"] not in aa:
             o.set_value(index, "status", "done")
             continue
+
+        if o.db_id.tolist().count(o.ix[index,"db_id"]) > 1:
+            o.set_value(index, "status", "dup")        
 
         if cfg['mode'] != 'all' and o.ix[index,"mi_get"] == 1:
             continue
@@ -284,18 +296,21 @@ def mediainfo_get(o,cfg,aa) :
             o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
             o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
 
+import threading
+import time
 
 def main() :
 
     aa = list()
     cfg = dict() #config
 
+
     init(cfg)
 
     o = pd.read_excel(cfg['if'],'doing').append(pd.read_excel(cfg['if'],'done'), ignore_index=True)
-
-    dir_scan(o,cfg,aa)
-
+    logging.info("time1")
+    o = dir_scan(o,cfg,aa)
+    logging.info("time2")
     douban_fetch(o,cfg,aa)
 
     mediainfo_get(o,cfg,aa)
@@ -306,7 +321,25 @@ def main() :
         o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
         o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
 
+    o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_html(open('doing.html', 'w'))
+
+
+    
+    logging.info("main_timer")
+    
+    #timer = threading.Timer(30.0, main)
+    #timer.start()
+
     return     
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG,
+                        format='%(asctime)s %(levelname)s %(message)s',
+                        #format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                        datefmt='%m-%d %H:%M:%S'
+                        )
+
+    #hello("ll")
+
+
     main()
