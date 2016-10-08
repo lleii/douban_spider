@@ -73,6 +73,11 @@ def douban_fetch(o,cfg,aa) :
 
         if cfg['mode'] != 'all' and o.ix[index,"db_fetch"] == 1 :
             continue
+
+        #if index != 1 :
+        #    continue
+
+        o.set_value(index, "db_title", '<a href="file://' + o.ix[index,"filepath"] + '">' + o.ix[index,"title"] + '</a>')
          
         if pd.isnull(o.ix[index, "id"]):
             o.set_value(index, "search_url", "http://api.douban.com/v2/movie/search?q=" + o.ix[index, "title"].replace(' ','%20'))
@@ -152,7 +157,8 @@ def douban_fetch(o,cfg,aa) :
                 o.set_value(index, "db_id", j["id"])
                 o.set_value(index, "db_fetch", 1)
             if 'images' in j: 
-                o.set_value(index, "db_images", j["images"]["small"])
+                o.set_value(index, "db_images", '<a href="' + j["alt"] + '"><img src="' + j["images"]["medium"] + '"/></a>')
+                #print('<a href="' + j["alt"] + '"><img src="' + j["images"]["medium"] + '"/></a>')
                 o.set_value(index, "db_fetch", 1)
             if 'mobile_url' in j: 
                 o.set_value(index, "db_mobile_url", j["mobile_url"])
@@ -178,9 +184,11 @@ def douban_fetch(o,cfg,aa) :
             if 'subtype' in j: 
                 o.set_value(index, "db_subtype", j["subtype"])
                 o.set_value(index, "db_fetch", 1)
+
             if 'title' in j: 
-                o.set_value(index, "db_title", j["title"])
+                o.set_value(index, "db_title", '<a href="file://' + o.ix[index,"filepath"] + '">' + j["title"] + '</a>')
                 o.set_value(index, "db_fetch", 1)
+
             if 'wish_count' in j: 
                 o.set_value(index, "db_wish_count", j["wish_count"])
                 o.set_value(index, "db_fetch", 1)
@@ -212,10 +220,10 @@ def douban_fetch(o,cfg,aa) :
                 o.set_value(index, "db_popular_reviews", j["popular_reviews"])
                 o.set_value(index, "db_fetch", 1)
 
-        #col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
-        #with pd.ExcelWriter(cfg['of']) as writer:
-        #    o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
-        #    o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
+        col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
+        with pd.ExcelWriter(cfg['of']) as writer:
+            o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
+            o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
 
 def dir_scan(o,cfg,aa) :
     b = o["filename"].tolist()
