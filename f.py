@@ -20,7 +20,7 @@ def show_tables():
     #males = data.loc[data.Gender=='m']
     pd.set_option('display.max_colwidth', -1)
 
-    return render_template('movman.html', table=data[hcol].to_html(escape=False))
+    return render_template('movman.html', name="name222")
 
 if __name__ == "__main__":
     app.run(debug=True,host='0.0.0.0')
