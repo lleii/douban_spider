@@ -7,7 +7,9 @@
 2.文件解析：MediaCoder集成
 3.在线信息抓取：IMDB、DOUBAN
 
-0.监控文件变化
+0.监控文件变化/60s?,资源&性能优化
+1.flask模板
+
 1.cfg['if']不存在,doing,done为空
 2.分国家，类型，年份等筛选
 3.重复id查找
@@ -23,6 +25,21 @@ BUG:
 
 
 chrome cookie：~/Library/Application Support/Google/Chrome/Default/Cookies 
+
+import wget
+url ='http://img7.doubanio.com//view//movie_poster_cover//lpst//public//p2155172952.jpg'
+filename = wget.download(url,out='/data')
+
+
+<a href="https://movie.douban.com/subject/1871906/"><img src="http://img7.doubanio.com/view/movie_poster_cover/ipst/public/p2155172952.jpg"/></a>
+
+<a href="file:///Volumes/data/tv/BBC.行星地球.11集全.2006.国粤台英四语.中英字幕￡CMCT木子鱼">地球脉动</a>
+
+https://datatables.net/examples/advanced_init/dom_toolbar.html
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.12/datatables.min.css"/>
+ 
+<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.12/datatables.min.js"></script>
 
 '''
 
@@ -195,10 +212,10 @@ def douban_fetch(o,cfg,aa) :
                 o.set_value(index, "db_popular_reviews", j["popular_reviews"])
                 o.set_value(index, "db_fetch", 1)
 
-        col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
-        with pd.ExcelWriter(cfg['of']) as writer:
-            o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
-            o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
+        #col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
+        #with pd.ExcelWriter(cfg['of']) as writer:
+        #    o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
+        #    o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
 
 def dir_scan(o,cfg,aa) :
     b = o["filename"].tolist()
@@ -225,10 +242,10 @@ def dir_scan(o,cfg,aa) :
                     logging.info("dir_scan new item:"+f['filepath'])
 
 
-    col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
-    with pd.ExcelWriter(cfg['of']) as writer:
-        o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
-        o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
+    #col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
+    #with pd.ExcelWriter(cfg['of']) as writer:
+    #    o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
+    #    o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
     return o
 
 def mediainfo_get(o,cfg,aa) :
@@ -291,10 +308,10 @@ def mediainfo_get(o,cfg,aa) :
                 if 'fileSize' in infoData:
                     o.set_value(index, "mi_fileSize", int(infoData['fileSize'])//1024//1024)
                     o.set_value(index, "mi_get", 1)
-        col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
-        with pd.ExcelWriter(cfg['of']) as writer:
-            o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
-            o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
+        #col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
+        #with pd.ExcelWriter(cfg['of']) as writer:
+        #    o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
+        #    o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
 
 import threading
 import time
@@ -308,9 +325,9 @@ def main() :
     init(cfg)
 
     o = pd.read_excel(cfg['if'],'doing').append(pd.read_excel(cfg['if'],'done'), ignore_index=True)
-    logging.info("time1")
+    
     o = dir_scan(o,cfg,aa)
-    logging.info("time2")
+    
     douban_fetch(o,cfg,aa)
 
     mediainfo_get(o,cfg,aa)
@@ -321,11 +338,11 @@ def main() :
         o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
         o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
 
-    o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_html(open('doing.html', 'w'))
+    #o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_html(open('doing.html', 'w'))
 
 
     
-    logging.info("main_timer")
+    logging.info("Main timer expiring")
     
     #timer = threading.Timer(30.0, main)
     #timer.start()
