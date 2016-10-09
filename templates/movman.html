@@ -8,15 +8,70 @@
 
 
 <link rel="stylesheet" type="text/css" href="static/dt/media/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="static/dt/extensions/FixedHeader/css/fixedHeader.dataTables.min.css">
 
 <script type="text/javascript" src="static/dt/media/js/jquery.js"></script> 
 <script type="text/javascript" charset="utf8" src="static/dt/media/js/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="static/dt/extensions/FixedHeader/js/dataTables.fixedHeader.min.js"></script>
+
+
 <script type="text/javascript" language="javascript" class="init">
+  
+
+  $.fn.dataTable.ext.search.push(
+    function( settings, data, dataIndex ) {
+      var min_db_rating = parseInt( $('#min_db_rating').val(), 10 );
+      var max_db_rating = parseInt( $('#max_db_rating').val(), 10 );
+      var val_db_rating = parseFloat( data[3] ) || 0; // use data for the age column
+
+
+      var min_mi_duration = parseInt( $('#min_mi_duration').val(), 10 );
+      var max_mi_duration = parseInt( $('#max_mi_duration').val(), 10 );
+      var val_mi_duration = parseFloat( data[4] ) || 0; // use data for the age column
+
+      var min_db_year = parseInt( $('#min_db_year').val(), 10 );
+      var max_db_year = parseInt( $('#max_db_year').val(), 10 );
+      var val_db_year = parseFloat( data[8] ) || 0; // use data for the age column
+
+      if (
+           ( 
+             ( isNaN( min_db_rating ) && isNaN( max_db_rating ) ) ||
+             ( isNaN( min_db_rating ) && val_db_rating <= max_db_rating )   ||
+             ( min_db_rating <= val_db_rating   && isNaN( max_db_rating ) ) ||
+             ( min_db_rating <= val_db_rating   && val_db_rating <= max_db_rating ) 
+           ) &&
+           ( 
+             ( isNaN( min_mi_duration ) && isNaN( max_mi_duration ) ) ||
+             ( isNaN( min_mi_duration ) && val_mi_duration <= max_mi_duration )   ||
+             ( min_mi_duration <= val_mi_duration   && isNaN( max_mi_duration ) ) ||
+             ( min_mi_duration <= val_mi_duration   && val_mi_duration <= max_mi_duration ) 
+           ) &&
+           ( 
+             ( isNaN( min_db_year ) && isNaN( max_db_year ) ) ||
+             ( isNaN( min_db_year ) && val_db_year <= max_db_year )   ||
+             ( min_db_year <= val_db_year   && isNaN( max_db_year ) ) ||
+             ( min_db_year <= val_db_year   && val_db_year <= max_db_year ) 
+           ) 
+         )
+
+      {
+        return true;
+      }
+      return false;
+    }
+  );
+
   $(document).ready(function() {
+
+    //$(".dataframe").addClass("display compact");
     var table =$('.dataframe').DataTable(
 
         {
+          fixedHeader: true,
           "paging": false,
+          "dom": 'lrtip',
+          //"autoWidth": true,
+          
           "columnDefs": [ 
             {
               "targets": [ 0 ],
@@ -24,9 +79,9 @@
               "searchable": false
             },
             {
-              "targets": [ 7 ],
-              "visible": false,
-              "searchable": false
+              "targets": [ 9 ],
+              "visible": true,
+              "searchable": true
             }
           ]
 
@@ -34,25 +89,45 @@
       } );
 
 
-  // Setup - add a text input to each footer cell
+
+
   $('.dataframe thead th').each( function () {
     var title = $(this).text();
-    $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+    if (title == 'db_rating') {
+        $(this).html( '<input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" class="db_range" type="text" id="min_db_rating" placeholder="Min '+title+'" /> <input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" class="db_range" type="text" id="max_db_rating" placeholder="Max '+title+'" />' );
+    } else if (title == 'mi_duration'){
+        $(this).html( '<input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" class="db_range" type="text" id="min_mi_duration"  placeholder="Min '+title+'" /> <input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;"  class="db_range" type="text" id="max_mi_duration" placeholder="Max '+title+'" />' );
+    } else if(title == 'db_year') {
+        $(this).html( '<input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;"  class="db_range" type="text" id="min_db_year" placeholder="Min '+title+'" /> <input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;"   class="db_range" type="text" id="max_db_year" placeholder="Max '+title+'" />' );
+    } else {
+        $(this).html( '<input style="width:100%;height:100%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" type="text" placeholder="'+title+'" />' );
+    }
   } );
 
 
-// Apply the search
-  table.columns().every( function () {
+  //$('.dataframe thead th').attr('width', '5%');
+
+  $('.db_range').keyup( function() {
+    table.draw();
+  } );
+
+
+
+  table.columns([1,2,5,6,7]).every( function () {
     var that = this;
 
-    $( 'input', this.footer() ).on( 'keyup change', function () {
+    $( 'input', this.header() ).on( 'keyup change', function () {
       if ( that.search() !== this.value ) {
         that
           .search( this.value )
           .draw();
       }
     } );
-  })
+  } );
+
+
+
+
 
 
     $('a.toggle-vis').on( 'click', function (e) {
@@ -64,6 +139,11 @@
     // Toggle the visibility
     column.visible( ! column.visible() );
   } );
+
+
+
+//$(".dataframe").removeClass("dataTable no-footer fixedHeader-floating");
+
 
 
   } );
@@ -80,25 +160,16 @@
 
 
 
-
-    <div>
-        Toggle column: <a class="toggle-vis" data-column="0">Index</a> - <a class="toggle-vis" data-column="1">Position</a> - <a class="toggle-vis" data-column=
-        "2">Office</a> - <a class="toggle-vis" data-column="3">Age</a> - <a class="toggle-vis" data-column="4">Start date</a> - <a class="toggle-vis" data-column=
-        "5">Salary</a>
+      <!--
+      <div>
+        Toggle column: 
+        <a class="toggle-vis" data-column="0">Index</a> -
+        <a class="toggle-vis" data-column="7">MovieTv</a> - 
+        <a class="toggle-vis" data-column="9">Summary</a> 
       </div>
+      -->
 
 {{ table|safe }}
-<tfoot>
-          <tr>
-            <th>Name</th>
-            <th>db_title</th>
-            <th>Office</th>
-            <th>Age</th>
-            <th>Start date</th>
-            <th>Salary</th>
-          </tr>
-        </tfoot>
-
 
 
     </div>

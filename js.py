@@ -19,16 +19,17 @@ def show_tables():
 	elif os.path.isfile('/Volumes/data/pt/db.xlsx'):
 		data = pd.read_excel('/Volumes/data/pt/db.xlsx','doing')
 	else:
-		print("error")
 		pass
-	#hcol=['db_images','db_title','db_rating','mi_duration','db_countries','db_genres', 'db_subtype','db_year',  'db_summary',]
-	hcol=['db_rating','mi_duration','db_countries','db_genres', 'db_subtype','db_year', ]
-	data=data[hcol]
+	print(data)
+	hcol=['db_images','db_title','db_rating','mi_duration','db_countries','db_genres', 'db_subtype','db_year',  'db_summary']
+	#hcol=['db_rating','mi_duration','db_countries','db_genres', 'db_subtype','db_year', ]
+	data = data [ hcol ]
+
 	l='['
 	#m=list()
 	for i,r in data.iterrows():
-		if i>3 :
-			continue
+		#if i>3 :
+		#	continue
 
 		l=l+'['
 		for j in data.columns :
