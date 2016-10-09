@@ -1,0 +1,155 @@
+<!doctype html>
+<html>
+<head>
+
+<title>Movie Man</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+
+<link rel="stylesheet" type="text/css" href="static/dt/media/css/jquery.dataTables.css">
+
+<script type="text/javascript" src="static/dt/media/js/jquery.js"></script> 
+<script type="text/javascript" charset="utf8" src="static/dt/media/js/jquery.dataTables.js"></script>
+
+
+  <script type="text/javascript" language="javascript" class="init">
+  
+
+var dataSet = {{ table|safe }};
+/*var dataSet = [
+["9.7","557","['英国']","['纪录片']","tv","2006.0",],
+["9.3","3539","['美国']","['剧情', '犯罪', '惊悚']","tv","2002.0",],
+["9.3","297","['法国']","['动画', '喜剧']","tv","2006.0",],
+["9.3","155","1","12","tv","2006.0"]
+];*/
+
+
+$.fn.dataTable.ext.search.push(
+  function( settings, data, dataIndex ) {
+    var min = parseInt( $('#min').val(), 10 );
+    var max = parseInt( $('#max').val(), 10 );
+    var age = parseFloat( data[3] ) || 0; // use data for the age column
+
+    if ( ( isNaN( min ) && isNaN( max ) ) ||
+       ( isNaN( min ) && age <= max ) ||
+       ( min <= age   && isNaN( max ) ) ||
+       ( min <= age   && age <= max ) )
+    {
+      return true;
+    }
+    return false;
+  }
+);
+
+
+
+$(document).ready(function() {
+   var table = $('#example').DataTable( {
+    data: dataSet,
+    columns: [
+      { title: "Name" },
+      { title: "db_title" },
+      { title: "Office" },
+      { title: "ext" },
+      { title: "Start date" },
+      { title: "Salary" }
+    ]
+  } );
+
+
+
+  $('#example thead th').each( function () {
+    var title = $(this).text();
+    if (title == 'ext') {
+        $(this).html( '<input type="text" id="min" name="min" placeholder="Min '+title+'" /> <input type="text" id="max" placeholder="Max '+title+'" />' );
+    } else {
+        $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+    }
+  } );
+
+
+  
+  $('#min, #max').keyup( function() {
+    table.draw();
+  } );
+
+
+/*
+  $('#test').on( 'keyup', function () {
+      table
+          .columns( 0 )
+          .search( this.value )
+          .draw();
+
+      //table.search( this.value ).draw();
+  } );
+*/
+
+
+
+  table.columns([0,1,2,4,5]).every( function () {
+    var that = this;
+
+    $( 'input', this.header() ).on( 'keyup change', function () {
+      if ( that.search() !== this.value ) {
+        that
+          .search( this.value )
+          .draw();
+      }
+    } );
+  } );
+
+
+
+  } );
+
+
+  </script>                            
+
+
+</head>
+
+<body  class="dt-example">
+  <div class="container">
+    <section>
+
+
+
+
+    <div>
+        Toggle column: <a class="toggle-vis" data-column="0">Index</a> - <a class="toggle-vis" data-column="1">Position</a> - <a class="toggle-vis" data-column=
+        "2">Office</a> - <a class="toggle-vis" data-column="3">Age</a> - <a class="toggle-vis" data-column="4">Start date</a> - <a class="toggle-vis" data-column=
+        "5">Salary</a>
+      </div>
+<!--
+{{ table|safe }}
+
+      <table border="0" cellspacing="5" cellpadding="5">
+        <tr>
+          <td>Minimum age:</td>
+          <td><input type="text" id="min" name="min"></td>
+        </tr>
+        <tr>
+          <td>Maximum age:</td>
+          <td><input type="text" id="max" name="max"></td>
+        </tr>
+        <tr>
+          <td>test</td>
+          <td><input type="text" id="test" name="test"></td>
+        </tr>
+
+      </table>
+-->
+
+<table id="example" class="display select-filter" width="100%"></table>
+
+    </div>
+  </section>
+</body>
+
+
+
+</html>
+
+
