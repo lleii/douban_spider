@@ -1,1 +1,1 @@
-git add *;git commit -m "init";git push
+git commit -am "init";git push
