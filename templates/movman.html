@@ -32,8 +32,29 @@ table.dataTable tbody td {
   padding: 1px;
 }
 
+
+.ll_hb {
+  text-align:center;
+  font-size:100%;
+  font-weight: bold;
+}
+
+select {
+  /*Chrome和Firefox里面的边框是不一样的，所以复写了一下*/
+  border: solid 0px #000;
+  height:100%;
+  width:100%;
+  text-align:center;
+  font-size:120%;
+  font-weight: bold;
+
+}
+
 ::-webkit-input-placeholder { /* WebKit browsers */
     color:    #000;
+    text-align:center;
+    font-size:150%;
+    font-weight: bold;
 }
 :-moz-placeholder { /* Mozilla Firefox 4 to 18 */
     color:    #000;
@@ -121,10 +142,9 @@ table.dataTable tbody td {
           initComplete: function () {
             this.api().columns([5,6,7]).every( function () {
               var column = this;
-              console.log(typeof((column.index())));
+              //console.log(typeof((column.index())));
               if (column.index() == [5]){
                 title = '国家'
-                console.log($(column.index()));
               } else if (column.index() == 6){
                 title = '题材'
               } else if (column.index() == 7){
@@ -176,10 +196,6 @@ table.dataTable tbody td {
       } );
 
 /*
-1.summary \n
-2.db_images筛选大小，先换标题
-3.后台线程，&共享
-4.关机/休眠 重启，自动运行，单实例
 
 
 eval("("+"tv"+")"); 
@@ -204,19 +220,19 @@ eval(f).forEach(function(e){
     var title = $(this).text();
     if (title == 'db_rating') {
         $(this).addClass("ll_sort");
-        $(this).html( '<input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" class="db_range" type="text" id="min_db_rating" placeholder="Min '+"评分"+'" /> <input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" class="db_range" type="text" id="max_db_rating" placeholder="Max '+"评分"+'" />' );
+        $(this).html( '<input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" class="db_range" type="text" id="min_db_rating" placeholder="'+"评分>"+'" /> <input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" class="db_range" type="text" id="max_db_rating" placeholder="'+"评分<"+'" />' );
     } else if (title == 'mi_duration'){
         $(this).addClass("ll_sort");
-        $(this).html( '<input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" class="db_range" type="text" id="min_mi_duration"  placeholder="Min '+"时长"+'" /> <input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;"  class="db_range" type="text" id="max_mi_duration" placeholder="Max '+"时长"+'" />' );
+        $(this).html( '<input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" class="db_range" type="text" id="min_mi_duration"  placeholder="'+"时长>"+'" /> <input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;"  class="db_range" type="text" id="max_mi_duration" placeholder="'+"时长<"+'" />' );
     } else if(title == 'db_year') {
         $(this).addClass("ll_sort");
-        $(this).html( '<input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;"  class="db_range" type="text" id="min_db_year" placeholder="Min '+"年份"+'" /> <input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;"   class="db_range" type="text" id="max_db_year" placeholder="Max '+"年份"+'" />' );
+        $(this).html( '<input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;"  class="db_range" type="text" id="min_db_year" placeholder="'+"年份>"+'" /> <input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;"   class="db_range" type="text" id="max_db_year" placeholder="'+"年份<"+'" />' );
     } else if(title == 'db_title') {
         $(this).html( '<input style="width:100%;height:100%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" type="text" placeholder="'+"标题"+'" />' );
     } else if(title == 'db_summary') {
         $(this).html( '<input style="width:100%;height:100%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" type="text" placeholder="'+"摘要"+'" />' );
     } else if(title == 'db_images') {
-        $(this).html( '海报' );
+        $(this).html( '<p class="ll_hb">海报</p>' );
     } 
   } );
 
@@ -229,10 +245,10 @@ eval(f).forEach(function(e){
 
 
 
-  table.columns([1,2,5,6,7]).every( function () {
+  table.columns([2,9]).every( function () {
     var that = this;
-
-    $( 'input', this.header() ).on( 'keyup change', function () {
+//keyup change
+    $( 'input', this.header() ).on( 'input', function () {
       if ( that.search() !== this.value ) {
         that
           .search( this.value )
@@ -244,7 +260,7 @@ eval(f).forEach(function(e){
 
 
 
-
+/*
 
     $('a.toggle-vis').on( 'click', function (e) {
     e.preventDefault();
@@ -255,7 +271,7 @@ eval(f).forEach(function(e){
     // Toggle the visibility
     column.visible( ! column.visible() );
   } );
-
+*/
 
 
 //$(".dataframe").removeClass("dataTable no-footer fixedHeader-floating");

@@ -7,17 +7,17 @@
 2.文件解析：MediaCoder集成
 3.在线信息抓取：IMDB、DOUBAN
 
-0.监控文件变化/60s?,资源&性能优化
-1.flask模板
-
 1.cfg['if']不存在,doing,done为空
-2.分国家，类型，年份等筛选
-3.重复id查找
+2.重复id查找
 
 TODOLIST v2：
 1.xls通过文件名点击播放；
 2.imdb信息获取，ID来源：1英文名获取；2.豆瓣获取
 
+now
+1.summary \n
+2.db_images可筛选图片大小
+3.关机/休眠 重启，自动运行，单实例判断
 
 
 BUG:
@@ -30,16 +30,6 @@ import wget
 url ='http://img7.doubanio.com//view//movie_poster_cover//lpst//public//p2155172952.jpg'
 filename = wget.download(url,out='/data')
 
-
-<a href="https://movie.douban.com/subject/1871906/"><img src="http://img7.doubanio.com/view/movie_poster_cover/ipst/public/p2155172952.jpg"/></a>
-
-<a href="file:///Volumes/data/tv/BBC.行星地球.11集全.2006.国粤台英四语.中英字幕￡CMCT木子鱼">地球脉动</a>
-
-https://datatables.net/examples/advanced_init/dom_toolbar.html
-
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.12/datatables.min.css"/>
- 
-<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.12/datatables.min.js"></script>
 
 '''
 
@@ -57,15 +47,30 @@ import os.path
 import threading
 import logging
 
+from flask import Flask
+from flask import render_template
+from multiprocessing import Process
+import multiprocessing
+
 DEBUG=1
+app = Flask(__name__)
+lock = multiprocessing.Lock()  
+
 
 def init(cfg) :
     cfg['mode'] = ''
     cfg['dir'] = ["/Volumes/data/pt","/Volumes/data/old","/Volumes/data/tv"]
-    cfg['if'] = "/Volumes/data/pt/mm2.xlsx"
-    cfg['of'] = "/Volumes/data/pt/mm2.xlsx"
+    cfg['if'] = "/Volumes/data/pt/db.xlsx"
+    cfg['of'] = "/Volumes/data/pt/db.xlsx"
 
-
+def xls_write(o,cfg) :
+    #列排序by col；行排序by db_rating
+    col=['db_fetch','mi_get','id','status','db_title','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
+    lock.acquire() 
+    with pd.ExcelWriter(cfg['of']) as writer:
+        o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
+        o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
+    lock.release() 
     
 def douban_fetch(o,cfg,aa) :
 
@@ -221,11 +226,7 @@ def douban_fetch(o,cfg,aa) :
             if 'popular_reviews' in j: 
                 o.set_value(index, "db_popular_reviews", j["popular_reviews"])
                 o.set_value(index, "db_fetch", 1)
-
-        col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
-        with pd.ExcelWriter(cfg['of']) as writer:
-            o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
-            o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
+        xls_write(o,cfg)
 
 def dir_scan(o,cfg,aa) :
     b = o["filename"].tolist()
@@ -251,10 +252,7 @@ def dir_scan(o,cfg,aa) :
                     o = o.append(f, ignore_index=True) 
                     if DEBUG == 1:
                         logging.info("dir_scan new item:"+f['filepath'])
-                    col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
-                    with pd.ExcelWriter(cfg['of']) as writer:
-                        o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
-                        o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
+                    xls_write(o,cfg)
     return o
 
 def mediainfo_get(o,cfg,aa) :
@@ -318,53 +316,76 @@ def mediainfo_get(o,cfg,aa) :
                 if 'fileSize' in infoData:
                     o.set_value(index, "mi_fileSize", int(infoData['fileSize'])//1024//1024)
                     o.set_value(index, "mi_get", 1)
-        col=['db_fetch','mi_get','id','status','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
-        with pd.ExcelWriter(cfg['of']) as writer:
-            o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
-            o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
+        xls_write(o,cfg)
 
 
 
 def run() :
 
-    if DEBUG == 1:
-        logging.info("Main timer expiring")
-        print("Main timer expiring")
+
+    while 1:  
+        if DEBUG == 1:
+            logging.info("Main timer expiring")
+            print("Main timer expiring")
+        
+        
+
+        aa = list()
+        cfg = dict() #config
+
+
+        init(cfg)
+
+        lock.acquire() 
+        o = pd.read_excel(cfg['if'],'doing').append(pd.read_excel(cfg['if'],'done'), ignore_index=True)
+        lock.release() 
+
+        o = dir_scan(o,cfg,aa)
+        
+        douban_fetch(o,cfg,aa)
+
+        mediainfo_get(o,cfg,aa)
+
+        xls_write(o,cfg)
+
+        
+        time.sleep(60*10)#10min
+        #o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_html(open('doing.html', 'w'))
+ 
+    #timer = threading.Timer(1.0, run)
+    #timer.start()
+
+    return  
+
+@app.route("/")
+def show_tables():
+    lock.acquire()     
+    if os.path.isfile('db.xlsx'):
+        data = pd.read_excel('db.xlsx','doing')
+    elif os.path.isfile('/Volumes/data/pt/db.xlsx'):
+        data = pd.read_excel('/Volumes/data/pt/db.xlsx','doing')
+    else:
+        print("error")
+        pass
+    lock.release() 
     
-    timer = threading.Timer(3.0, run)
-    timer.start()
+    hcol=['db_images','db_title','db_rating','mi_duration','db_countries','db_genres', 'db_subtype','db_year',  'db_summary',]
 
-    return
+    pd.set_option('display.max_colwidth', -1)
 
-    aa = list()
-    cfg = dict() #config
+    return render_template('movman.html', table=data[hcol].to_html(escape=False))
 
-
-    init(cfg)
-
-    o = pd.read_excel(cfg['if'],'doing').append(pd.read_excel(cfg['if'],'done'), ignore_index=True)
-    
-    o = dir_scan(o,cfg,aa)
-    
-    douban_fetch(o,cfg,aa)
-
-    mediainfo_get(o,cfg,aa)
-
-    #列排序by col；行排序by db_rating
-    col=['db_fetch','mi_get','id','status','db_title','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
-    with pd.ExcelWriter(cfg['of']) as writer:
-        o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
-        o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
-
-    #o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_html(open('doing.html', 'w'))
-
-    return     
-
-if __name__ == '__main__':
+if __name__ == "__main__":
+    #mpl = multiprocessing.log_to_stderr()
+    #mpl.setLevel(logging.DEBUG)    
     if DEBUG == 1:
         logging.basicConfig(level=logging.DEBUG,
                             format='%(asctime)s %(levelname)s %(message)s',
                             #format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                             datefmt='%m-%d %H:%M:%S'
                             )
-    run()
+
+    p = Process(target=run)
+    p.start()
+    
+    app.run(debug=True,host='0.0.0.0')
