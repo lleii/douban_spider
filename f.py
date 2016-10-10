@@ -6,6 +6,7 @@ import os
 import pandas as pd
 from flask import Flask
 from flask import render_template
+from multiprocessing import Process
 app = Flask(__name__)
 
 @app.route("/")
@@ -31,7 +32,7 @@ def show_tables():
     #males = data.loc[data.Gender=='m']
 
 
-	print(data[hcol].to_json('db.json'))
+	#print(data[hcol].to_json('db.json'))
 
 
 	pd.set_option('display.max_colwidth', -1)
@@ -39,4 +40,8 @@ def show_tables():
 	return render_template('movman.html', table=data[hcol].to_html(escape=False))
 
 if __name__ == "__main__":
-    app.run(debug=True,host='0.0.0.0')
+	p = Process(target=movman.run)
+	
+	p.start()
+	
+	app.run(debug=True,host='0.0.0.0')

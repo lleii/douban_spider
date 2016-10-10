@@ -15,6 +15,39 @@
 <script type="text/javascript" charset="utf8" src="static/dt/extensions/FixedHeader/js/dataTables.fixedHeader.min.js"></script>
 
 
+<style type="text/css">
+table.dataTable thead th,
+table.dataTable thead td {
+  padding: 1px;  
+}
+
+
+table.dataTable thead th.ll_sort,
+table.dataTable thead td.ll_sort {
+  padding: 1px 18px 1px 1px;  
+}
+
+table.dataTable tbody th,
+table.dataTable tbody td {
+  padding: 1px;
+}
+
+::-webkit-input-placeholder { /* WebKit browsers */
+    color:    #000;
+}
+:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+    color:    #000;
+}
+::-moz-placeholder { /* Mozilla Firefox 19+ */
+    color:    #000;
+}
+:-ms-input-placeholder { /* Internet Explorer 10+ */
+    color:    #000;
+}
+
+</style>
+
+
 <script type="text/javascript" language="javascript" class="init">
   
 
@@ -69,6 +102,7 @@
         {
           fixedHeader: true,
           "paging": false,
+          //"ordering": false,
           "dom": 'lrtip',
           //"autoWidth": true,
           
@@ -79,29 +113,111 @@
               "searchable": false
             },
             {
-              "targets": [ 9 ],
-              "visible": true,
-              "searchable": true
+              "targets": [ 1,2,5,6,7,9 ],
+              "orderable": false, 
             }
-          ]
+
+          ],
+          initComplete: function () {
+            this.api().columns([5,6,7]).every( function () {
+              var column = this;
+              console.log(typeof((column.index())));
+              if (column.index() == [5]){
+                title = '国家'
+                console.log($(column.index()));
+              } else if (column.index() == 6){
+                title = '题材'
+              } else if (column.index() == 7){
+                title = '类型'
+              }   
+              
+              //console.log($(column.header()));
+              var select = $('<select><option value="">' + title + '</option></select>')
+                .appendTo( $(column.header()).empty() )
+                .on( 'change', function () {
+                  var val = $.fn.dataTable.util.escapeRegex(
+                    $(this).val()
+                  );
+
+                  column
+                    .search( val )
+                    //.search( val ? '^'+val+'$' : '', true, false )
+                    .draw();
+                } );
+
+              n=[]; 
+              column.data().unique().sort().each( function ( d, j ) {
+                //console.log(d,d.search(/'/));  
+
+                if (d.search(/'/)>0){
+                  //console.log(f,typeof(f));  
+                  eval(d.toString()).forEach(function(e) {  
+                       if(n.indexOf(e) == -1) n.push(e);
+                  }) 
+                
+                } else {
+
+                  if(n.indexOf(d) == -1) n.push(d);
+
+                }
+
+
+
+                
+              } );
+
+              eval(n).forEach(function(e){  
+                    select.append( '<option value="'+e+'">'+e+'</option>' ) 
+                  }) ;
+            } );
+          }
 
 
       } );
 
+/*
+1.summary \n
+2.db_images筛选大小，先换标题
+3.后台线程，&共享
+4.关机/休眠 重启，自动运行，单实例
 
+
+eval("("+"tv"+")"); 
+eval("("+"['中国大陆', '美国']"+")"); 
+"['中国大陆', '美国']".search(/,/)
+d="['中国大陆', '美国']";
+f="['中国大陆', '美国', '美国2']";
+n=[];
+eval(d).forEach(function(e){  
+    //alert(e);  
+     if(n.indexOf(e) == -1) n.push(e);
+     alert(n);  
+})  
+eval(f).forEach(function(e){  
+    //alert(e);  
+     if(n.indexOf(e) == -1) n.push(e);
+     alert(n);  
+})  */
 
 
   $('.dataframe thead th').each( function () {
     var title = $(this).text();
     if (title == 'db_rating') {
-        $(this).html( '<input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" class="db_range" type="text" id="min_db_rating" placeholder="Min '+title+'" /> <input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" class="db_range" type="text" id="max_db_rating" placeholder="Max '+title+'" />' );
+        $(this).addClass("ll_sort");
+        $(this).html( '<input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" class="db_range" type="text" id="min_db_rating" placeholder="Min '+"评分"+'" /> <input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" class="db_range" type="text" id="max_db_rating" placeholder="Max '+"评分"+'" />' );
     } else if (title == 'mi_duration'){
-        $(this).html( '<input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" class="db_range" type="text" id="min_mi_duration"  placeholder="Min '+title+'" /> <input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;"  class="db_range" type="text" id="max_mi_duration" placeholder="Max '+title+'" />' );
+        $(this).addClass("ll_sort");
+        $(this).html( '<input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" class="db_range" type="text" id="min_mi_duration"  placeholder="Min '+"时长"+'" /> <input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;"  class="db_range" type="text" id="max_mi_duration" placeholder="Max '+"时长"+'" />' );
     } else if(title == 'db_year') {
-        $(this).html( '<input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;"  class="db_range" type="text" id="min_db_year" placeholder="Min '+title+'" /> <input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;"   class="db_range" type="text" id="max_db_year" placeholder="Max '+title+'" />' );
-    } else {
-        $(this).html( '<input style="width:100%;height:100%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" type="text" placeholder="'+title+'" />' );
-    }
+        $(this).addClass("ll_sort");
+        $(this).html( '<input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;"  class="db_range" type="text" id="min_db_year" placeholder="Min '+"年份"+'" /> <input style="width:100%;height:50%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;"   class="db_range" type="text" id="max_db_year" placeholder="Max '+"年份"+'" />' );
+    } else if(title == 'db_title') {
+        $(this).html( '<input style="width:100%;height:100%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" type="text" placeholder="'+"标题"+'" />' );
+    } else if(title == 'db_summary') {
+        $(this).html( '<input style="width:100%;height:100%;box-sizing: border-box;-webkit-box-sizing:border-box;-moz-box-sizing: border-box;" type="text" placeholder="'+"摘要"+'" />' );
+    } else if(title == 'db_images') {
+        $(this).html( '海报' );
+    } 
   } );
 
 
