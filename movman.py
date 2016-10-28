@@ -53,7 +53,7 @@ from flask import render_template
 from multiprocessing import Process
 import multiprocessing
 
-DEBUG=1
+DEBUG=0
 app = Flask(__name__)
 lock = multiprocessing.Lock()  
 
@@ -68,6 +68,7 @@ def xls_write(o,cfg) :
     #列排序by col；行排序by db_rating
     col=['db_fetch','mi_get','id','status','db_title','filename','db_rating','db_ratings_count','mi_bitrate','mi_duration','mi_fileSize','filepath','dirpath','mi_extname','mi_container','title','db_directors','db_casts','db_countries','db_genres', 'db_subtype','db_year',  'db_summary', 'db_aka', 'db_alt', 'db_collect_count', 'db_comments_count', 'db_current_season',  'db_do_count', 'db_douban_site','db_episodes_count', 'db_id', 'db_images', 'db_mobile_url','db_original_title', 'db_reviews_count', 'db_schedule_url', 'db_seasons_count','db_share_url', 'db_stars',  'db_wish_count', 'durations', 'excess',  'group', 'languages', 'mainland_pubdate', 'photos','popular_reviews', 'pubdates', 'quality', 'resolution', 'search_url','season',  'url', 'website', 'writers','audio', 'codec', 'year','container']
     lock.acquire() 
+    logging.info("xls_write")
     with pd.ExcelWriter(cfg['of']) as writer:
         o[o.status != 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='doing')
         o[o.status == 'done'][col].sort_values(['db_rating'],ascending=0).to_excel(writer, sheet_name='done')
@@ -327,7 +328,7 @@ def run() :
     while 1:  
         if DEBUG == 1:
             logging.info("Main timer expiring")
-            print("Main timer expiring")
+            #print("Main timer expiring")
         
         
 
@@ -379,8 +380,8 @@ def show_tables():
 if __name__ == "__main__":
     #mpl = multiprocessing.log_to_stderr()
     #mpl.setLevel(logging.DEBUG)    
-    if DEBUG == 1:
-        logging.basicConfig(level=logging.DEBUG,
+
+    logging.basicConfig(level=logging.DEBUG,
                             format='%(asctime)s %(levelname)s %(message)s',
                             #format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                             datefmt='%m-%d %H:%M:%S'
