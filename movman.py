@@ -57,12 +57,13 @@ DEBUG=1
 app = Flask(__name__)
 #lock = multiprocessing.Lock()  
 
+rootdir="/Volumes/data/"
 
 def init(cfg) :
     cfg['mode'] = ''
-    cfg['dir'] = ["/Volumes/data/pt","/Volumes/data/old","/Volumes/data/tv"]
-    cfg['if'] = "/Volumes/data/pt/db.xlsx"
-    cfg['of'] = "/Volumes/data/pt/db.xlsx"
+    cfg['dir'] = [rootdir+"pt",rootdir+"old",rootdir+"tv"]
+    cfg['if'] = rootdir+"pt/db.xlsx"
+    cfg['of'] = rootdir+"pt/db.xlsx"
 
 def xls_write(o,cfg) :
     #列排序by col；行排序by db_rating
@@ -366,8 +367,8 @@ def show_tables():
     #lock.acquire()     
     if os.path.isfile('db.xlsx'):
         data = pd.read_excel('db.xlsx','doing')
-    elif os.path.isfile('/Volumes/data/pt/db.xlsx'):
-        data = pd.read_excel('/Volumes/data/pt/db.xlsx','doing')
+    elif os.path.isfile(rootdir+'pt/db.xlsx'):
+        data = pd.read_excel(rootdir+'pt/db.xlsx','doing')
     else:
         print("error")
         pass
